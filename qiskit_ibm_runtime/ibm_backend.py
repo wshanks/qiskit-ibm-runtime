@@ -41,9 +41,9 @@ from qiskit.pulse.channels import (
 from qiskit.transpiler.target import Target
 
 # temporary until we unite the 2 Session classes
-from qiskit_ibm_provider.session import (
-    Session as ProviderSession,
-)  # temporary until we unite the 2 Session classes
+# from qiskit_ibm_provider.session import (
+#     Session as ProviderSession,
+# )  # temporary until we unite the 2 Session classes
 
 from .utils.utils import validate_job_tags
 from . import qiskit_runtime_service  # pylint: disable=unused-import,cyclic-import
@@ -194,7 +194,7 @@ class IBMBackend(Backend):
         self._defaults = None
         self._target = None
         self._max_circuits = configuration.max_experiments
-        self._session: ProviderSession = None
+        self._session: "ProviderSession" = None
         if (
             not self._configuration.simulator
             and hasattr(self.options, "noise_model")
@@ -829,15 +829,17 @@ class IBMBackend(Backend):
                 run_config_dict[key] = backend_options[key]
         return run_config_dict
 
-    def open_session(self, max_time: Optional[Union[int, str]] = None) -> ProviderSession:
+    def open_session(self, max_time: Optional[Union[int, str]] = None) -> "ProviderSession":
         """Open session"""
-        self._session = ProviderSession(max_time=max_time)
-        return self._session
+        raise RuntimeError("Session support patched out!")
+        # self._session = ProviderSession(max_time=max_time)
+        # return self._session
 
     @property
-    def session(self) -> ProviderSession:
+    def session(self) -> "ProviderSession":
         """Return session"""
-        return self._session
+        raise RuntimeError("Session support patched out!")
+        # return self._session
 
     def cancel_session(self) -> None:
         """Cancel session. All pending jobs will be cancelled."""
