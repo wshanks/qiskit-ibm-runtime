@@ -217,11 +217,30 @@ class QiskitRuntimeLocalService:
         options_copy = copy.deepcopy(options)
 
         prim_options = {}
-        if seed_simulator := options_copy.pop("simulator", {}).pop("seed_simulator", None):
+        sim_options = options_copy.pop("simulator", {})
+        if seed_simulator := sim_options.pop("seed_simulator", None):
             prim_options["seed_simulator"] = seed_simulator
+        if "noise_model" in sim_options:
+            prim_options["noise_model"] = sim_options["noise_model"]
         if primitive == "sampler":
             if default_shots := options_copy.pop("default_shots", None):
                 prim_options["default_shots"] = default_shots
+            if meas_type := options_copy.get("execution", {}).pop("meas_type", None):
+                if meas_type == "classified":
+                    prim_options["meas_level"] = 2
+                    prim_options["meas_return"] = "single"
+                elif meas_type == "kerneled":
+                    prim_options["meas_level"] = 1
+                    prim_options["meas_return"] = "single"
+                elif meas_type == "avg_kerneled":
+                    prim_options["meas_level"] = 1
+                    prim_options["meas_return"] = "avg"
+                else:
+                    options_copy["execution"]["meas_type"] = meas_type
+
+                if not options_copy["execution"]:
+                    del options_copy["execution"]
+
             primitive_inst = BackendSamplerV2(backend=backend, options=prim_options)
         else:
             if default_shots := options_copy.pop("default_shots", None):
